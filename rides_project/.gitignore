@@ -1,7 +1,0 @@
-# Environments
-.env
-.venv
-env/
-venv/
-*.pyc
-__pycache__/
