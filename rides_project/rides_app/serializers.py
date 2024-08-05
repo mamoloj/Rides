@@ -1,6 +1,8 @@
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
+from .models import User, RideEvent, Ride
+
 
 User = get_user_model()
 
@@ -27,3 +29,26 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
             return data
 
         raise serializers.ValidationError('Invalid credentials')
+
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['id_user', 'role', 'first_name', 'last_name', 'email', 'phone_number']
+
+class RideEventSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = RideEvent
+        fields = ['id_ride', 'description', 'created_at']
+
+
+class RideSerializer(serializers.ModelSerializer):
+    id_rider = UserSerializer()
+    id_driver = UserSerializer()
+    todays_ride_events = serializers.SerializerMethodField()
+    distance = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = Ride
+        fields = ['status', 'id_rider', 'id_driver', 'pickup_latitude', 'pickup_longitude',
+                  'dropoff_latitude', 'dropoff_longitude', 'pickup_time', 'todays_ride_events','distance']

@@ -40,7 +40,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework_simplejwt',
     'django_filters',
-    'ridesapp',
+    'rides_app',
 ]
 
 MIDDLEWARE = [
@@ -163,4 +163,4 @@ SIMPLE_JWT = {
 }
 
 # Custom user model setting
-AUTH_USER_MODEL = 'ridesapp.User'
+AUTH_USER_MODEL = 'rides_app.User'
