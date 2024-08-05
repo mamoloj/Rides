@@ -2,7 +2,7 @@ from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from .models import User, RideEvent, Ride
-
+from django.utils import timezone
 
 User = get_user_model()
 
@@ -52,3 +52,17 @@ class RideSerializer(serializers.ModelSerializer):
         model = Ride
         fields = ['status', 'id_rider', 'id_driver', 'pickup_latitude', 'pickup_longitude',
                   'dropoff_latitude', 'dropoff_longitude', 'pickup_time', 'todays_ride_events','distance']
+
+    def get_todays_ride_events(self, obj):
+        today = timezone.now()
+        yesterday = today - timezone.timedelta(days=1)
+        events = RideEvent.objects.filter(id_ride=obj.id_ride, created_at__range=[yesterday, today])
+        return RideEventSerializer(events, many=True).data
+    
+    def get_distance(self, obj):
+        # Check if distance is included in the context
+        request = self.context.get('request')
+        if request and 'distance' in request.query_params.get('ordering', ''):
+            # Return the annotated distance
+            return getattr(obj, 'distance', None)
+        return None

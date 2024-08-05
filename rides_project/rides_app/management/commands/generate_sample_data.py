@@ -14,15 +14,21 @@ class Command(BaseCommand):
 
     def generate_users(self):
         roles = ['admin', 'user']
+
+        last_index_user = 0
+        while User.objects.filter(email=f'user{last_index_user}@example.com').exists():
+            last_index_user+=1
+
         for i in range(10):
+            index_user = i + last_index_user
             role = random.choice(roles)
             User.objects.create_user(
-                email=f'user{i}@example.com',
+                email=f'user{index_user}@example.com',
                 password='password123',
-                first_name=f'First{i}',
-                last_name=f'Last{i}',
+                first_name=f'First{index_user}',
+                last_name=f'Last{index_user}',
                 role=role,
-                phone_number=f'12345678{i}'
+                phone_number=f'12345678{index_user}'
             )
         self.stdout.write(self.style.SUCCESS('Successfully created users.'))
 
@@ -43,10 +49,41 @@ class Command(BaseCommand):
         self.stdout.write(self.style.SUCCESS('Successfully created rides.'))
 
     def generate_ride_events(self):
-        rides = list(Ride.objects.all())
-        for i in range(100):
-            RideEvent.objects.create(
-                id_ride=random.choice(rides),
-                description=f'Event description {i}'
-            )
+        rides = Ride.objects.all()
+        for ride in rides:
+            pickup_time = ride.pickup_time
+            dropoff_time = pickup_time + timedelta(hours=random.randint(1, 6))
+
+            ride_events = RideEvent.objects.filter(id_ride=ride)
+
+            if len(ride_events) == 0:
+                # Create both pickup and dropoff events
+                RideEvent.objects.bulk_create([
+                    RideEvent(
+                        id_ride=ride,
+                        description='Status changed to pickup',
+                        created_at=pickup_time
+                    ),
+                    RideEvent(
+                        id_ride=ride,
+                        description='Status changed to dropoff',
+                        created_at=dropoff_time
+                    )
+                ])
+            elif len(ride_events) == 1:
+                existing_event = ride_events.first()
+                if existing_event.description == 'Status changed to pickup':
+                    # Create only the dropoff event
+                    RideEvent.objects.create(
+                        id_ride=ride,
+                        description='Status changed to dropoff',
+                        created_at=dropoff_time
+                    )
+                else:
+                    # Create only the pickup event
+                    RideEvent.objects.create(
+                        id_ride=ride,
+                        description='Status changed to pickup',
+                        created_at=pickup_time
+                    )
         self.stdout.write(self.style.SUCCESS('Successfully created ride events.'))

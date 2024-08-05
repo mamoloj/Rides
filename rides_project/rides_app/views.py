@@ -10,7 +10,8 @@ from django.db.models import Prefetch, F, Value
 from django.utils import timezone
 from datetime import timedelta
 from django_filters.rest_framework import DjangoFilterBackend
-
+from .filters import RideFilter
+from django.core.exceptions import ValidationError
 
 class MyTokenObtainPairView(TokenObtainPairView):
     serializer_class = MyTokenObtainPairSerializer
@@ -29,6 +30,7 @@ class RideViewSet(viewsets.ModelViewSet):
     queryset = Ride.objects.all()
     serializer_class = RideSerializer
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
+    filterset_class = RideFilter
     ordering_fields = ['pickup_time', 'distance']
     permission_classes = [IsAdminRole]
 
@@ -49,21 +51,27 @@ class RideViewSet(viewsets.ModelViewSet):
             latitude = self.request.query_params.get('latitude', None)
             longitude = self.request.query_params.get('longitude', None)
 
-            if latitude is not None and longitude is not None:
+            if latitude is None or longitude is None:
+                raise ValidationError("Latitude and longitude parameters are required for distance ordering.")
+
+            try:
                 latitude = float(latitude)
                 longitude = float(longitude)
+            except ValueError:
+                raise ValidationError("Latitude and longitude must be valid float numbers.")
 
-                queryset = queryset.annotate(
-                    pickup_lat_rad=Radians('pickup_latitude'),
-                    pickup_lon_rad=Radians('pickup_longitude'),
-                    ref_lat_rad=Value(radians(latitude)),
-                    ref_lon_rad=Value(radians(longitude)),
-                    distance=ACos(
-                        Sin(F('pickup_lat_rad')) * Sin(F('ref_lat_rad')) +
-                        Cos(F('pickup_lat_rad')) * Cos(F('ref_lat_rad')) *
-                        Cos(F('ref_lon_rad') - F('pickup_lon_rad'))
-                    ) * R
-                )
+
+            queryset = queryset.annotate(
+                pickup_lat_rad=Radians('pickup_latitude'),
+                pickup_lon_rad=Radians('pickup_longitude'),
+                ref_lat_rad=Value(radians(latitude)),
+                ref_lon_rad=Value(radians(longitude)),
+                distance=ACos(
+                    Sin(F('pickup_lat_rad')) * Sin(F('ref_lat_rad')) +
+                    Cos(F('pickup_lat_rad')) * Cos(F('ref_lat_rad')) *
+                    Cos(F('ref_lon_rad') - F('pickup_lon_rad'))
+                ) * R
+            )
 
         return queryset
     
