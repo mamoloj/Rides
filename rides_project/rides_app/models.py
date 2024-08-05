@@ -49,3 +49,31 @@ class User(AbstractBaseUser):
 
     def has_module_perms(self, app_label):
         return self.is_superuser or super().has_module_perms(app_label)
+    
+
+class Ride(models.Model):
+    STATUS_CHOICES = (
+        ('en-route', 'En Route'),
+        ('pickup', 'Pickup'),
+        ('dropoff', 'Dropoff'),
+    )
+    id_ride = models.AutoField(primary_key=True)
+    id_rider = models.ForeignKey(User, related_name='rides_as_rider', on_delete=models.CASCADE, db_column='id_user_rider')
+    id_driver = models.ForeignKey(User, related_name='rides_as_driver', on_delete=models.CASCADE, db_column='id_user_driver')
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES)
+    pickup_latitude = models.FloatField()
+    pickup_longitude = models.FloatField()
+    dropoff_latitude = models.FloatField()
+    dropoff_longitude = models.FloatField()
+    pickup_time = models.DateTimeField()
+
+
+    class Meta:
+        ordering = ['pickup_time']
+
+
+class RideEvent(models.Model):
+    id_ride_event = models.AutoField(primary_key=True)
+    id_ride = models.ForeignKey(Ride, related_name='events', on_delete=models.CASCADE, db_column='id_ride')
+    description = models.CharField(max_length=255)
+    created_at = models.DateTimeField(auto_now_add=True)
