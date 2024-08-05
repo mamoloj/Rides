@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-iq@^w100^_l4kv12y1yxj#c1z%l2e1j2os^ibdrinc3%(!)%(q
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["*"]
 
 
 # Application definition
@@ -158,7 +158,7 @@ SIMPLE_JWT = {
     'AUTH_TOKEN_CLASSES': (
         'rest_framework_simplejwt.tokens.AccessToken',
     ),
-    'TOKEN_USER_CLASS': 'ridesapp.models.User',
+    'TOKEN_USER_CLASS': 'rides_app.models.User',
     'USER_ID_FIELD': 'id_user',
 }
 
