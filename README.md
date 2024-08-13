@@ -36,7 +36,7 @@ Follow these steps to set up the project on your local machine.
 
 6. Generate Sample Data:
     ```bash
-    python manage.py generate_sample_data?
+    python manage.py generate_sample_data
     ```
     
 7. Run the development server:
