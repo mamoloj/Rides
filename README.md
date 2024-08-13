@@ -1,4 +1,14 @@
+
 # Ride Management API
+
+
+## Overview
+
+The Ride Management API allows for the management and tracking of rides, events, and users. It includes features like pagination, filtering, sorting, and role-based access control.
+
+## Setup Instructions
+
+Follow these steps to set up the project on your local machine.
 
 ## Setup Instructions
 
@@ -36,6 +46,22 @@
 
 
 ## API Endpoints
+
+### API Endpoints Authentication and Token Generation
+
+- `POST /token/` - Generate new Token based on username and password
+    
+    {
+        "username": "your_username",
+        "password": "your_password"
+    }
+
+  
+- `POST token/refresh/` - Generate new Token based on refresh token
+    
+    {
+        "refresh": "your_refresh_token"
+    }
 
 
 ### API Endpoints Rides
